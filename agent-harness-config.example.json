@@ -1,0 +1,7 @@
+{
+  "goal": "构建一个最小可用的 HTML+JS 计数器页面，包含增加/减少按钮和显示区域，支持 localStorage 持久化",
+  "projectType": "web",
+  "taskFormat": "features",
+  "maxItemsPerSession": 1,
+  "language": "zh"
+}

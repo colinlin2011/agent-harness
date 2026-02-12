@@ -1,0 +1,26 @@
+---
+description: 长期运行 Agent 项目的会话内规则，强制开场与结束流程
+globs: work_items.json
+alwaysApply: false
+---
+
+# 长期运行 Agent 规则
+
+当项目包含 `agent-harness-config.json` 时，每次工作必须遵循：
+
+## 开场
+
+1. 读取 `claude-progress.txt` 和 `work_items.json`
+2. 查看 `git log --oneline -10`
+3. 若有 `init.sh`，先执行基本验证
+
+## 执行
+
+- 每次只完成 `work_items.json` 中第一个 `passes: false` 的项
+- 实现并验证该项
+
+## 结束
+
+1. `git commit` 并写清晰 message
+2. 更新 `claude-progress.txt`
+3. 仅将已完成的项改为 `passes: true`，不改动 description 或删除项

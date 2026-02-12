@@ -1,0 +1,5 @@
+# agent-harness 作为独立仓库时的忽略项
+.DS_Store
+Thumbs.db
+*.tmp
+*.log

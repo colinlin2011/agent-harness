@@ -1,0 +1,94 @@
+# agent-harness 公共逻辑
+# 供 run-initializer.ps1、run-continue.ps1、install-skill.ps1 调用
+
+# 获取 agent-harness 根目录（脚本在 scripts/ 下，上级为根）
+function Get-HarnessRoot {
+    $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+    $root = Split-Path -Parent $scriptDir
+    if (-not (Test-Path $root)) {
+        throw "无法定位 agent-harness 根目录: $root"
+    }
+    return $root
+}
+
+# 检查 Cursor CLI (agent 命令) 是否可用
+function Test-CursorCLI {
+    try {
+        $null = Get-Command agent -ErrorAction Stop
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+# 读取并解析任务配置
+# 返回 hashtable，若校验失败则 throw
+function Get-ProjectConfig {
+    param(
+        [string]$ProjectPath
+    )
+    $configPath = Join-Path $ProjectPath "agent-harness-config.json"
+    if (-not (Test-Path $configPath)) {
+        throw "未找到配置文件: $configPath"
+    }
+    $json = Get-Content $configPath -Raw -Encoding UTF8
+    try {
+        $config = $json | ConvertFrom-Json
+    } catch {
+        throw "配置文件 JSON 格式错误: $_"
+    }
+    if (-not $config.goal) {
+        throw "配置缺少必填字段: goal"
+    }
+    $result = @{
+        goal                = $config.goal
+        projectType         = if ($config.projectType) { $config.projectType } else { "generic" }
+        taskFormat          = if ($config.taskFormat) { $config.taskFormat } else { "features" }
+        maxItemsPerSession  = if ($config.maxItemsPerSession) { $config.maxItemsPerSession } else { 1 }
+        language            = if ($config.language) { $config.language } else { "zh" }
+    }
+    return $result
+}
+
+# 替换 prompt 模板中的占位符
+function Invoke-PromptTemplate {
+    param(
+        [string]$Template,
+        [hashtable]$Vars
+    )
+    $result = $Template
+    foreach ($key in $Vars.Keys) {
+        $placeHolder = "{{$key}}"
+        $result = $result.Replace($placeHolder, $Vars[$key])
+    }
+    return $result
+}
+
+# Agent 在沙箱内无法执行 git，脚本在 session 结束后代为提交
+function Invoke-GitCommitAfterSession {
+    param([string]$MessageSuffix = "")
+    try {
+        if (-not (Test-Path ".git")) {
+            git init 2>$null
+        }
+        git config user.name 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            git config user.name "agent-harness"
+            git config user.email "agent-harness@localhost"
+        }
+        git add . 2>$null
+        $status = git status --short 2>$null
+        if ($status) {
+            $msg = "agent-harness: session @ $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+            if ($MessageSuffix) { $msg = "agent-harness: $MessageSuffix @ $(Get-Date -Format 'yyyy-MM-dd HH:mm')" }
+            git commit -m "$msg" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "[OK] Git commit created" -ForegroundColor Green
+            } else {
+                Write-Host "[Note] Git commit failed (check git status)" -ForegroundColor Yellow
+            }
+        }
+    } catch {
+        Write-Host "[Note] Git commit skipped: $_" -ForegroundColor Yellow
+    }
+}
