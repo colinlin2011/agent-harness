@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0] - 2026-02-13
+
+### Added
+- **飞书通知**：run-until-complete 完成/未完成、run-continue 每轮结束时可选推送至飞书群
+- **_feishu.ps1**：飞书 Webhook 发送模块，支持环境变量、feishu-config.json、agent-harness-config 三种配置
+- **feishu-config.example.json**：飞书配置模板
+- **docs/FEISHU.md**：飞书集成完整说明（Webhook 获取、启用方式、企业应用扩展说明）
+
 ## [1.1.0] - 2026-02-13
 
 ### Added

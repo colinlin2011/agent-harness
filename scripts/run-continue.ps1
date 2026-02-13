@@ -13,6 +13,7 @@ $ErrorActionPreference = "Stop"
 # 加载公共逻辑
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $scriptDir "_common.ps1")
+. (Join-Path $scriptDir "_feishu.ps1")
 
 $harnessRoot = Get-HarnessRoot
 $projectPath = $ProjectPath.Trim()
@@ -97,6 +98,18 @@ try {
 }
 
 if ($logPath) { try { Stop-SessionLog } catch { } }
+
+# 飞书通知（每轮结束时，仅当 notifyOnRound 时）
+$feishuConfig = Get-FeishuConfig -ProjectPath $projectPath -ProjectConfig $config
+if ($feishuConfig.notifyOnRound -and $feishuConfig.enabled) {
+    $remaining = 0
+    if (Test-Path $workItemsPath) {
+        $wi = Get-Content $workItemsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $remaining = ($wi.items | Where-Object { -not $_.passes }).Count
+    }
+    $msg = "[agent-harness] 本轮完成`n项目: $projectPath`n剩余: $remaining 项"
+    Send-FeishuMessage -Text $msg -Config $feishuConfig | Out-Null
+}
 
 Write-Host ""
 Write-Host "[Done] Coding Agent finished" -ForegroundColor Green

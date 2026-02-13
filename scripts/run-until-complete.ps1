@@ -15,6 +15,7 @@ $projectPath = (Resolve-Path $ProjectPath).Path
 $workItemsPath = Join-Path $projectPath "work_items.json"
 
 . (Join-Path $scriptDir "_common.ps1")
+. (Join-Path $scriptDir "_feishu.ps1")
 
 function Get-RemainingCount {
     $json = Get-Content $workItemsPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -31,6 +32,10 @@ Write-Host "Estimated: ~$estMinutes min (assume ~4 min per item)" -ForegroundCol
 Write-Host ""
 
 $logPath = $null
+$projectConfig = $null
+try { $projectConfig = Get-ProjectConfig -ProjectPath $projectPath } catch { }
+$feishuConfig = Get-FeishuConfig -ProjectPath $projectPath -ProjectConfig $projectConfig
+
 try {
     $logPath = Start-SessionLog -ProjectPath $projectPath -LogPrefix "until_complete"
     Write-Host "[Log] $logPath" -ForegroundColor DarkGray
@@ -69,6 +74,14 @@ if ($final -eq 0) {
     Write-Host " COMPLETE - All work items done!" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
     [console]::Beep(800, 300)
+    if ($feishuConfig.notifyOnComplete) {
+        $msg = "[agent-harness] 任务全部完成`n项目: $projectPath`n共 $round 轮，全部通过"
+        Send-FeishuMessage -Text $msg -Config $feishuConfig | Out-Null
+    }
 } elseif ($final -gt 0) {
     Write-Host "Stopped with $final item(s) unfinished after $MaxRounds rounds." -ForegroundColor Yellow
+    if ($feishuConfig.notifyOnError -and $feishuConfig.enabled) {
+        $msg = "[agent-harness] 任务未完成`n项目: $projectPath`n剩余 $final 项，共 $round 轮"
+        Send-FeishuMessage -Text $msg -Config $feishuConfig | Out-Null
+    }
 }

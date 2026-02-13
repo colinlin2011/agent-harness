@@ -1,0 +1,6 @@
+{
+  "webhook": "",
+  "notifyOnComplete": true,
+  "notifyOnRound": false,
+  "notifyOnError": true
+}

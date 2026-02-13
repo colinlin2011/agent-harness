@@ -48,6 +48,7 @@ function Get-ProjectConfig {
         language            = if ($config.language) { $config.language } else { "zh" }
         verificationScript = if ($config.verificationScript) { $config.verificationScript } else { $null }
         deliverables       = if ($config.deliverables) { @($config.deliverables) } else { @() }
+        feishu             = $config.feishu
     }
     return $result
 }

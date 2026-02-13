@@ -59,6 +59,7 @@ mkdir D:\Colin\Cursor\my-task
 | language | 否 | zh / en |
 | verificationScript | 否 | 每轮结束后执行的验证命令（如 `python -m pytest`） |
 | deliverables | 否 | 交付物路径数组，用于健康检查（如 `["output/video/a.mp4"]`） |
+| feishu | 否 | 飞书通知配置，详见 [docs/FEISHU.md](docs/FEISHU.md) |
 
 ## 团队接入
 
@@ -99,6 +100,15 @@ mkdir D:\Colin\Cursor\my-task
 .\agent-harness\scripts\run-health-check.ps1 -ProjectPath .\my-task
 ```
 检查 work_items 完成率、必要文件、交付物、日志等。
+
+### 飞书通知
+
+任务完成或每轮结束时，可将通知推送至飞书群聊。**回到公司后**：
+
+1. 设置环境变量 `FEISHU_WEBHOOK`，或
+2. 在项目目录创建 `feishu-config.json` 填入 webhook
+
+详见 **[docs/FEISHU.md](docs/FEISHU.md)**。
 
 ## 故障排查
 

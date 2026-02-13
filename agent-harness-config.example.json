@@ -5,5 +5,11 @@
   "maxItemsPerSession": 1,
   "language": "zh",
   "verificationScript": null,
-  "deliverables": ["index.html", "README.md"]
+  "deliverables": ["index.html", "README.md"],
+  "feishu": {
+    "webhook": "",
+    "notifyOnComplete": true,
+    "notifyOnRound": false,
+    "notifyOnError": true
+  }
 }
