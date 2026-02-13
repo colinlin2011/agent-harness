@@ -50,8 +50,42 @@ function Get-ProjectConfig {
         goalVerificationScript = if ($config.goalVerificationScript) { $config.goalVerificationScript } else { $null }
         deliverables         = if ($config.deliverables) { @($config.deliverables) } else { @() }
         feishu               = $config.feishu
+        browserVerification  = if ($config.browserVerification) { $config.browserVerification } else { $null }
     }
     return $result
+}
+
+# 获取 work_items 中第一个 passes:false 的项，用于 prompt 注入
+function Get-CurrentWorkItem {
+    param([string]$WorkItemsPath)
+    $json = Get-Content $WorkItemsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    foreach ($item in $json.items) {
+        if (-not $item.passes) {
+            $line = "- description: $($item.description)"
+            if ($item.acceptanceCriteria) {
+                foreach ($c in $item.acceptanceCriteria) { $line += "`n  - 验收条件: $c" }
+            }
+            $vc = if ($item.verificationCommand) { $item.verificationCommand } else { "(无，需人工自检)" }
+            $line += "`n  - verificationCommand: $vc"
+            return $line
+        }
+    }
+    return "(无待完成项)"
+}
+
+# 对指定项执行 verificationCommand，返回是否通过
+function Invoke-ItemVerificationCommand {
+    param([object]$Item, [string]$ProjectPath)
+    $cmd = $Item.verificationCommand
+    if (-not $cmd -or ($cmd -eq "")) { return $true }
+    Push-Location $ProjectPath
+    try {
+        Invoke-Expression $cmd
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        Write-Host "[WARN] verificationCommand failed: $_" -ForegroundColor Yellow
+        return $false
+    } finally { Pop-Location }
 }
 
 # 替换 prompt 模板中的占位符

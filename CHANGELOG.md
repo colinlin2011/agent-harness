@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.0] - 2026-02-13
+
+### Added
+- **框架级 verificationCommand 兜底**：Agent 标记 passes 后，脚本对新通过的项执行 verificationCommand，失败则自动回退
+- **prompt 注入当前 work_item**：run-continue 将首个待完成项的 description、acceptanceCriteria、verificationCommand 注入 prompt
+- **run-health-check -RegressionCheck**：对已通过的项重跑 verificationCommand，检测回归
+- **run-health-check -Format json**：支持 JSON 输出，便于 CI/CD 集成
+- **work_items schema 检查**：health-check 提示缺少 acceptanceCriteria 的项
+- **Initializer 创建 tests 骨架**：projectType 为 cli/library 时创建 tests/ 与占位文件
+- **browserVerification 配置**：预留浏览器验证配置（enabled/baseUrl/mcpRequired），暂未使用
+
 ## [1.3.0] - 2026-02-13
 
 ### Added

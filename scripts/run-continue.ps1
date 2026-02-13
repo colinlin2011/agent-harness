@@ -47,12 +47,14 @@ if (Test-Path $configPath) {
 }
 $goal = if ($config) { $config.goal } else { "Complete the next item in work_items.json" }
 $maxItems = if ($config -and $config.maxItemsPerSession) { $config.maxItemsPerSession } else { 1 }
+$currentItem = Get-CurrentWorkItem -WorkItemsPath $workItemsPath
 
 $promptPath = Join-Path $harnessRoot "prompts/coding-agent.md"
 $template = Get-Content $promptPath -Raw -Encoding UTF8
 $prompt = Invoke-PromptTemplate -Template $template -Vars @{
-    GOAL       = $goal
-    MAX_ITEMS  = $maxItems
+    GOAL          = $goal
+    MAX_ITEMS     = $maxItems
+    CURRENT_ITEM  = $currentItem
 }
 
 # 4. 日志（仅当非 NoLog 时）
@@ -73,9 +75,37 @@ Write-Host ""
 
 $agentArgs = @("-p", $prompt, "--output-format", "text")
 if ($AllowNetwork) { $agentArgs += "--sandbox", "disabled" }
+$beforePassed = @()
+if (Test-Path $workItemsPath) {
+    $wiBefore = Get-Content $workItemsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    for ($i = 0; $i -lt $wiBefore.items.Count; $i++) {
+        if ($wiBefore.items[$i].passes) { $beforePassed += $i }
+    }
+}
+
 Push-Location $projectPath
 try {
     & agent @agentArgs
+
+    # 框架级 verificationCommand 兜底：对新标记 passes 的项执行验证
+    $wiAfter = Get-Content $workItemsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $toRevert = @()
+    for ($i = 0; $i -lt $wiAfter.items.Count; $i++) {
+        $item = $wiAfter.items[$i]
+        if ($item.passes -and ($beforePassed -notcontains $i) -and $item.verificationCommand) {
+            Write-Host ""
+            Write-Host "--- Framework verification [$i] ---" -ForegroundColor Gray
+            if (-not (Invoke-ItemVerificationCommand -Item $item -ProjectPath $projectPath)) {
+                Write-Host "[REVERT] Item $i verification failed, reverting passes to false" -ForegroundColor Yellow
+                $toRevert += $i
+            }
+        }
+    }
+    if ($toRevert.Count -gt 0) {
+        foreach ($i in $toRevert) { $wiAfter.items[$i].passes = $false }
+        $wiAfter | ConvertTo-Json -Depth 10 | Set-Content $workItemsPath -Encoding UTF8
+    }
+
     Invoke-GitCommitAfterSession
 
     # verificationScript（可选）

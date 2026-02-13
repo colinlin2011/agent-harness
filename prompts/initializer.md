@@ -41,7 +41,11 @@
    - **init.ps1**（Windows）：等价逻辑，可用 `python -m http.server 8000` 或 `npx serve .`
    - 纯 HTML+JS 项目：两个脚本都创建；其他类型可只创建 init.sh 或写简单说明
 
-4. **Git 与 .gitignore**
+4. **创建 tests/ 骨架**（若 projectType 为 cli/library）
+   - 创建 `tests/` 目录，放入 `test_skeleton.py`（Python）或 `test_skeleton.js`（Node）占位
+   - 内容可为空的测试框架或 `assert True`，便于后续 verificationCommand 有可执行目标
+
+5. **Git 与 .gitignore**
    - 如当前目录无 `.git`，执行 `git init`
    - 若创建 `.gitignore`，加入 `logs/` 以忽略 agent-harness 会话日志
    - 将上述文件加入并做首次 commit，commit message 简明

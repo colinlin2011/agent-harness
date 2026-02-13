@@ -71,7 +71,27 @@ agent-harness 采用**验收驱动**范式，确保每项子任务和整体目�
 └─────────────────────────────────────────────────────────┘
 ```
 
-## 四、向后兼容
+## 四、浏览器验证（配置预留）
+
+当任务成果需在浏览器中验证时，可配置 `browserVerification`（暂未启用，预留扩展）：
+
+```json
+{
+  "browserVerification": {
+    "enabled": false,
+    "baseUrl": "http://localhost:3000",
+    "mcpRequired": false
+  }
+}
+```
+
+- **enabled**：是否启用浏览器验证（当前框架未使用）
+- **baseUrl**：本地开发服务地址，供 Browser MCP 打开
+- **mcpRequired**：是否需要配置 Browser MCP 才能验证
+
+需要时可在 Cursor 中配置 Browser MCP，并在 prompt 中增加浏览器验证指引。
+
+## 五、向后兼容
 
 - 旧项目若 work_items 无 `acceptanceCriteria`、`verificationCommand`，Agent 仍按「实现后自评」执行
 - 建议新项目由 Initializer 生成含验收字段的 work_items，以提升质量

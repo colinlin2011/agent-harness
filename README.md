@@ -61,6 +61,7 @@ mkdir D:\Colin\Cursor\my-task
 | goalVerificationScript | 否 | 全部完成后执行的集成验证（如 `python -m pytest tests/integration`） |
 | deliverables | 否 | 交付物路径数组，用于健康检查（如 `["output/video/a.mp4"]`） |
 | feishu | 否 | 飞书通知配置，详见 [docs/FEISHU.md](docs/FEISHU.md) |
+| browserVerification | 否 | 浏览器验证预留配置（enabled/baseUrl），暂未使用 |
 
 ### 验收驱动
 
@@ -103,8 +104,10 @@ work_items 采用**验收驱动**：每项需含 `acceptanceCriteria`（必填�
 
 ```powershell
 .\agent-harness\scripts\run-health-check.ps1 -ProjectPath .\my-task
+.\agent-harness\scripts\run-health-check.ps1 -ProjectPath .\my-task -RegressionCheck   # 重跑 verificationCommand 检测回归
+.\agent-harness\scripts\run-health-check.ps1 -ProjectPath .\my-task -Format json      # JSON 输出（CI/CD）
 ```
-检查 work_items 完成率、必要文件、交付物、日志等。
+检查 work_items 完成率、必要文件、交付物、日志、schema（acceptanceCriteria）等。
 
 ### 飞书通知
 

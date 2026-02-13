@@ -12,5 +12,10 @@
     "notifyOnComplete": true,
     "notifyOnRound": false,
     "notifyOnError": true
+  },
+  "browserVerification": {
+    "enabled": false,
+    "baseUrl": "http://localhost:3000",
+    "mcpRequired": false
   }
 }
