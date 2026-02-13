@@ -46,6 +46,8 @@ function Get-ProjectConfig {
         taskFormat          = if ($config.taskFormat) { $config.taskFormat } else { "features" }
         maxItemsPerSession  = if ($config.maxItemsPerSession) { $config.maxItemsPerSession } else { 1 }
         language            = if ($config.language) { $config.language } else { "zh" }
+        verificationScript = if ($config.verificationScript) { $config.verificationScript } else { $null }
+        deliverables       = if ($config.deliverables) { @($config.deliverables) } else { @() }
     }
     return $result
 }
@@ -62,6 +64,53 @@ function Invoke-PromptTemplate {
         $result = $result.Replace($placeHolder, $Vars[$key])
     }
     return $result
+}
+
+# 在项目 logs/ 目录下启动会话日志（Start-Transcript）
+function Start-SessionLog {
+    param(
+        [string]$ProjectPath,
+        [string]$LogPrefix = "session"
+    )
+    $logsDir = Join-Path $ProjectPath "logs"
+    if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir -Force | Out-Null }
+    $ts = Get-Date -Format "yyyyMMdd_HHmmss"
+    $logPath = Join-Path $logsDir "${LogPrefix}_${ts}.log"
+    Start-Transcript -Path $logPath -Force | Out-Null
+    return $logPath
+}
+
+function Stop-SessionLog {
+    try { Stop-Transcript | Out-Null } catch { }
+}
+
+# 若配置了 verificationScript，在项目目录下执行（调用方需已 Push-Location）
+function Invoke-VerificationScript {
+    param([hashtable]$Config, [string]$ProjectPath)
+    $script = $Config.verificationScript
+    if (-not $script) { return $true }
+    try {
+        Invoke-Expression $script
+        return $LASTEXITCODE -eq 0
+    } catch {
+        Write-Host "[WARN] verificationScript failed: $_" -ForegroundColor Yellow
+        return $false
+    }
+}
+
+# 检查 deliverables 配置中的交付物是否存在
+function Test-Deliverables {
+    param([hashtable]$Config, [string]$ProjectPath)
+    $items = $Config.deliverables
+    if (-not $items -or $items.Count -eq 0) { return @{ AllPresent = $true; Missing = @() } }
+    $missing = @()
+    foreach ($item in $items) {
+        $path = if ($item -is [string]) { $item } else { $item.path }
+        if (-not $path) { continue }
+        $fullPath = Join-Path $ProjectPath $path
+        if (-not (Test-Path $fullPath)) { $missing += $path }
+    }
+    return @{ AllPresent = ($missing.Count -eq 0); Missing = $missing }
 }
 
 # Agent 在沙箱内无法执行 git，脚本在 session 结束后代为提交

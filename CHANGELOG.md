@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.0] - 2026-02-13
+
+### Added
+- **new-project.ps1**：一键创建新项目，自动生成 agent-harness-config.json 和 .cursor/rules
+- **run-health-check.ps1**：项目健康检查（work_items、deliverables、logs、环境）
+- **run-until-complete.ps1 -ContinueOnError**：单轮失败时继续下一轮
+- **预估时间**：run-until-complete 开始时输出预计耗时（按每项约 4 分钟）
+- **完成通知**：全部完成时控制台提示 + 蜂鸣
+- **日志持久化**：run-continue 写入 `logs/session_*.log`，run-until-complete 写入 `logs/until_complete_*.log`
+- **verificationScript**：config 中可配置每轮结束后的验证命令
+- **deliverables**：config 中可配置交付物路径，健康检查时校验
+- **maxItemsPerSession**：真正生效，prompt 支持每轮完成 N 项
+- **Initializer 支持 init.ps1**：Windows 项目同时生成 init.ps1
+
+### Changed
+- run-continue 支持 -NoLog（由 run-until-complete 调用时避免重复日志）
+- agent-harness-config.example.json 增加 verificationScript、deliverables 示例
+
 ## [1.0.0] - 2026-02-13
 
 ### Added

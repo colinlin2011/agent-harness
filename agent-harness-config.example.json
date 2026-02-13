@@ -3,5 +3,7 @@
   "projectType": "web",
   "taskFormat": "features",
   "maxItemsPerSession": 1,
-  "language": "zh"
+  "language": "zh",
+  "verificationScript": null,
+  "deliverables": ["index.html", "README.md"]
 }

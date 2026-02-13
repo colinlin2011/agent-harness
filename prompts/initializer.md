@@ -26,13 +26,14 @@
    - 简要说明本次初始化的内容
    - 供后续 session 快速了解项目状态
 
-3. **创建 `init.sh`**（若 projectType 为 web/cli/library）
-   - 用于启动开发环境或验证基本可运行
-   - 纯 HTML+JS 项目可用 `python -m http.server 8000` 或 `npx serve .`
-   - 若无需启动脚本，可写简单说明
+3. **创建环境初始化脚本**（若 projectType 为 web/cli/library）
+   - **init.sh**（Unix/macOS）：用于启动开发环境或验证基本可运行
+   - **init.ps1**（Windows）：等价逻辑，可用 `python -m http.server 8000` 或 `npx serve .`
+   - 纯 HTML+JS 项目：两个脚本都创建；其他类型可只创建 init.sh 或写简单说明
 
-4. **Git**
+4. **Git 与 .gitignore**
    - 如当前目录无 `.git`，执行 `git init`
+   - 若创建 `.gitignore`，加入 `logs/` 以忽略 agent-harness 会话日志
    - 将上述文件加入并做首次 commit，commit message 简明
 
 ## 禁止事项

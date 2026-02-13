@@ -16,22 +16,31 @@
 ### 1. 新建任务
 
 ```powershell
-# 创建项目目录
+# 方式 A：使用 new-project.ps1 一键创建
+.\agent-harness\scripts\new-project.ps1 -Goal "你的任务目标" -ProjectPath .\my-task -ProjectType web
+
+# 方式 B：手动创建
 mkdir D:\Colin\Cursor\my-task
-cd D:\Colin\Cursor\my-task
+# 创建 agent-harness-config.json（参考 agent-harness-config.example.json），填写 goal
 
-# 创建配置文件（参考 agent-harness-config.example.json）
-# 编辑 agent-harness-config.json，填写 goal
-
-# 执行首次初始化（生成 work_items.json、claude-progress.txt、init.sh）
-..\agent-harness\scripts\run-initializer.ps1 -ProjectPath .
+# 执行首次初始化（生成 work_items.json、claude-progress.txt、init.sh / init.ps1）
+.\agent-harness\scripts\run-initializer.ps1 -ProjectPath .\my-task
 ```
 
 ### 2. 继续工作（手动或定时）
 
 ```powershell
-..\agent-harness\scripts\run-continue.ps1 -ProjectPath D:\Colin\Cursor\my-task
+# 单次执行（完成 1 项或 maxItemsPerSession 项）
+.\agent-harness\scripts\run-continue.ps1 -ProjectPath .\my-task
+
+# 循环执行直至全部完成（需网络时加 -AllowNetwork）
+.\agent-harness\scripts\run-until-complete.ps1 -ProjectPath .\my-task -AllowNetwork
+
+# 失败时继续下一轮（-ContinueOnError）
+.\agent-harness\scripts\run-until-complete.ps1 -ProjectPath .\my-task -ContinueOnError
 ```
+
+会话日志自动保存至 `logs/session_*.log` 和 `logs/until_complete_*.log`。
 
 ### 3. 定时执行（Windows 任务计划程序）
 
@@ -46,8 +55,10 @@ cd D:\Colin\Cursor\my-task
 | goal | 是 | 任务总体目标 |
 | projectType | 否 | web / cli / library / research / document / generic |
 | taskFormat | 否 | features / milestones / checkpoints |
-| maxItemsPerSession | 否 | 默认 1 |
+| maxItemsPerSession | 否 | 每轮最多完成项数，默认 1 |
 | language | 否 | zh / en |
+| verificationScript | 否 | 每轮结束后执行的验证命令（如 `python -m pytest`） |
+| deliverables | 否 | 交付物路径数组，用于健康检查（如 `["output/video/a.mp4"]`） |
 
 ## 团队接入
 
@@ -81,6 +92,13 @@ cd D:\Colin\Cursor\my-task
 ```
 
 **预期**：每轮完成 1 项、更新 claude-progress.txt、work_items 中对应项 passes: true，下一轮选取下一项。脚本在每轮结束后自动执行 git 提交（Agent 沙箱内无法执行 git，由脚本代为提交）。
+
+### 健康检查
+
+```powershell
+.\agent-harness\scripts\run-health-check.ps1 -ProjectPath .\my-task
+```
+检查 work_items 完成率、必要文件、交付物、日志等。
 
 ## 故障排查
 

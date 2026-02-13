@@ -12,13 +12,13 @@
 2. 读取 `claude-progress.txt`，了解之前的工作
 3. 读取 `work_items.json`，查看所有项及 passes 状态
 4. 执行 `git log --oneline -10`，查看最近提交
-5. 若存在 `init.sh`，执行它以验证环境可用（或按 init.sh 说明启动服务做基本检查）
+5. 若存在 `init.sh` 或 `init.ps1`，执行它以验证环境可用（Windows 用 init.ps1，Unix 用 init.sh）
 
 ## 选择并完成工作
 
 - 在 `work_items.json` 中选择**第一个** `passes: false` 的项
-- **只完成这一项**，不要一次做多项
-- 实现、测试、确保该项可验证通过
+- 本次 session 最多完成 **{{MAX_ITEMS}}** 项（按顺序，逐项完成）
+- 实现、测试、确保每项可验证通过
 
 ## 结束前必须完成
 
@@ -28,7 +28,7 @@
 
 ## 禁止事项
 
-- 一次完成多个 work_items
+- 一次完成超过 {{MAX_ITEMS}} 个 work_items
 - 删除 work_items 中的任何项
 - 未经实际验证就标记 passes: true
 - 修改 work_items 的 description 或删除/重写项

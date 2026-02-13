@@ -1,9 +1,11 @@
 # Long-running Agent - Continue
-# Usage: .\run-continue.ps1 -ProjectPath <project-path>
+# Usage: .\run-continue.ps1 -ProjectPath <project-path> [-AllowNetwork] [-NoLog]
 
 param(
     [Parameter(Mandatory = $true)]
-    [string]$ProjectPath
+    [string]$ProjectPath,
+    [switch]$AllowNetwork,
+    [switch]$NoLog
 )
 
 $ErrorActionPreference = "Stop"
@@ -43,25 +45,58 @@ if (Test-Path $configPath) {
     try { $config = Get-ProjectConfig -ProjectPath $projectPath } catch { }
 }
 $goal = if ($config) { $config.goal } else { "Complete the next item in work_items.json" }
+$maxItems = if ($config -and $config.maxItemsPerSession) { $config.maxItemsPerSession } else { 1 }
 
 $promptPath = Join-Path $harnessRoot "prompts/coding-agent.md"
 $template = Get-Content $promptPath -Raw -Encoding UTF8
-$prompt = Invoke-PromptTemplate -Template $template -Vars @{ GOAL = $goal }
+$prompt = Invoke-PromptTemplate -Template $template -Vars @{
+    GOAL       = $goal
+    MAX_ITEMS  = $maxItems
+}
 
-# 4. 执行 agent
+# 4. 日志（仅当非 NoLog 时）
+$logPath = $null
+if (-not $NoLog) {
+    try {
+        $logPath = Start-SessionLog -ProjectPath $projectPath -LogPrefix "session"
+        Write-Host "[Log] $logPath" -ForegroundColor DarkGray
+    } catch { }
+}
+
+# 5. 执行 agent
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host " Starting Coding Agent (Continue)" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+$agentArgs = @("-p", $prompt, "--output-format", "text")
+if ($AllowNetwork) { $agentArgs += "--sandbox", "disabled" }
 Push-Location $projectPath
 try {
-    & agent -p $prompt --output-format text
+    & agent @agentArgs
     Invoke-GitCommitAfterSession
+
+    # verificationScript（可选）
+    if ($config -and $config.verificationScript) {
+        Write-Host ""
+        Write-Host "--- Running verificationScript ---" -ForegroundColor Gray
+        $ok = Invoke-VerificationScript -Config $config -ProjectPath $projectPath
+        if (-not $ok) { Write-Host "[WARN] verificationScript failed" -ForegroundColor Yellow }
+    }
+
+    # deliverables 检查（可选）
+    if ($config -and $config.deliverables -and $config.deliverables.Count -gt 0) {
+        $r = Test-Deliverables -Config $config -ProjectPath $projectPath
+        if (-not $r.AllPresent) {
+            Write-Host "[INFO] Missing deliverables: $($r.Missing -join ', ')" -ForegroundColor Gray
+        }
+    }
 } finally {
     Pop-Location
 }
+
+if ($logPath) { try { Stop-SessionLog } catch { } }
 
 Write-Host ""
 Write-Host "[Done] Coding Agent finished" -ForegroundColor Green
