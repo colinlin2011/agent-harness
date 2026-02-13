@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "description": "创建项目骨架：main.py、config.py、requirements.txt，目录结构 output/",
+      "acceptanceCriteria": [
+        "main.py 存在且可 import config",
+        "pip install -r requirements.txt 无报错",
+        "python main.py 能执行到环境检查"
+      ],
+      "verificationCommand": "python -c \"import main; print('OK')\"",
+      "passes": false
+    },
+    {
+      "description": "实现核心业务逻辑：完成数据加载与处理",
+      "acceptanceCriteria": [
+        "能正确加载输入数据",
+        "处理逻辑符合需求文档",
+        "有单元测试覆盖主要分支"
+      ],
+      "verificationCommand": "python -m pytest tests/test_core.py -v",
+      "passes": false
+    }
+  ]
+}

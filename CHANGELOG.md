@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0] - 2026-02-13
+
+### Added
+- **验收驱动**：work_items 扩展 `acceptanceCriteria`、`verificationCommand`
+- **goalVerificationScript**：全部完成后执行集成验证
+- **templates/work_items.example.json**：含验收字段的 work_items 模板
+- **docs/VERIFICATION.md**：验收与验证机制说明
+
+### Changed
+- **Initializer**：拆解 work_items 时必须包含 acceptanceCriteria，推荐 verificationCommand
+- **Coding Agent**：必须执行 verificationCommand 且通过后才可标记 passes
+- **run-until-complete**：全部完成时执行 goalVerificationScript，失败时告警
+
 ## [1.2.0] - 2026-02-13
 
 ### Added

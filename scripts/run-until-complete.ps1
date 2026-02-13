@@ -69,13 +69,31 @@ $final = Get-RemainingCount
 if ($logPath) { try { Stop-SessionLog } catch { } }
 
 if ($final -eq 0) {
+    $goalVerifyOk = $true
+    if ($projectConfig -and $projectConfig.goalVerificationScript) {
+        Write-Host ""
+        Write-Host "--- 集成验证 (goalVerificationScript) ---" -ForegroundColor Gray
+        Push-Location $projectPath
+        try {
+            Invoke-Expression $projectConfig.goalVerificationScript
+            $goalVerifyOk = ($LASTEXITCODE -eq 0)
+        } catch {
+            Write-Host "[WARN] goalVerificationScript failed: $_" -ForegroundColor Yellow
+            $goalVerifyOk = $false
+        } finally { Pop-Location }
+        if (-not $goalVerifyOk) {
+            Write-Host "[WARN] 集成验证未通过，请检查 goalVerificationScript" -ForegroundColor Yellow
+        }
+    }
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Green
     Write-Host " COMPLETE - All work items done!" -ForegroundColor Green
+    if (-not $goalVerifyOk) { Write-Host " (集成验证未通过，请人工检查)" -ForegroundColor Yellow }
     Write-Host "========================================" -ForegroundColor Green
     [console]::Beep(800, 300)
     if ($feishuConfig.notifyOnComplete) {
         $msg = "[agent-harness] 任务全部完成`n项目: $projectPath`n共 $round 轮，全部通过"
+        if (-not $goalVerifyOk) { $msg += "`n(集成验证未通过)" }
         Send-FeishuMessage -Text $msg -Config $feishuConfig | Out-Null
     }
 } elseif ($final -gt 0) {

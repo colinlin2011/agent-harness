@@ -18,19 +18,22 @@
 
 - 在 `work_items.json` 中选择**第一个** `passes: false` 的项
 - 本次 session 最多完成 **{{MAX_ITEMS}}** 项（按顺序，逐项完成）
-- 实现、测试、确保每项可验证通过
+- **实现**该项，然后**验收**：
+  1. 若该项有 `verificationCommand`：在项目目录执行该命令，**必须通过**才可标记 passes
+  2. 若该项有 `acceptanceCriteria`：逐条自检，全部满足才可标记 passes
+  3. 若验证失败：修复代码后重跑验证，**禁止**在验证未通过时标记 passes
 
 ## 结束前必须完成
 
-1. 执行 `git add .` 并 `git commit -m "清晰的提交说明"`，提交本次改动
+1. **验收通过后**，执行 `git add .` 并 `git commit -m "清晰的提交说明"`
 2. 更新 `claude-progress.txt`，记录本次完成的内容和当前状态
-3. 在 `work_items.json` 中**仅**将已完成的项改为 `passes: true`，不要修改 description 或其他项
+3. 在 `work_items.json` 中**仅**将已验收通过的项改为 `passes: true`，不要修改 description、acceptanceCriteria、verificationCommand
 
 ## 禁止事项
 
 - 一次完成超过 {{MAX_ITEMS}} 个 work_items
 - 删除 work_items 中的任何项
-- 未经实际验证就标记 passes: true
-- 修改 work_items 的 description 或删除/重写项
+- **未经实际验证就标记 passes: true**（验证未通过时必须修复，不可标记）
+- 修改 work_items 的 description、acceptanceCriteria、verificationCommand
 
 请立即开始执行。

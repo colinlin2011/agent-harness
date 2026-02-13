@@ -12,15 +12,25 @@
 
 ## 任务拆解格式
 
-按「{{TASK_FORMAT}}」形式拆解，每项需可独立完成、可验证。
+按「{{TASK_FORMAT}}」形式拆解，每项需可独立完成、**可验收**。
+
+## 验收驱动原则（必须遵循）
+
+拆解 work_items 时，**先设计验收标准，再写实现描述**。每项需包含：
+
+- **acceptanceCriteria**（必填）：1～5 条可检查的验收条件，如「main.py 存在且可 import」「pytest 通过」
+- **verificationCommand**（推荐）：可自动执行的验证命令，如 `python -m pytest tests/`、`npm test`。若能自动化则务必填写
+
+完整示例见 `agent-harness/templates/work_items.example.json`（若可访问）
 
 ## 你必须完成的工作
 
 1. **创建 `work_items.json`**
-   - 将任务目标拆成细粒度项，结构为：`{"items":[{"description":"具体描述","passes":false}]}`
-   - 每项描述清晰、可单独完成、可验证
-   - 禁止删除已有项，禁止大范围改写
+   - 结构：`{"items":[{"description":"...","acceptanceCriteria":["条件1","条件2"],"verificationCommand":"可选","passes":false}]}`
+   - 每项必须有 **acceptanceCriteria** 数组（至少 1 条）
+   - 可自动验证的项必须有 **verificationCommand**
    - 所有 `passes` 初始均为 `false`
+   - 禁止删除已有项，禁止大范围改写
 
 2. **创建 `claude-progress.txt`**
    - 简要说明本次初始化的内容

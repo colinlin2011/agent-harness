@@ -46,9 +46,10 @@ function Get-ProjectConfig {
         taskFormat          = if ($config.taskFormat) { $config.taskFormat } else { "features" }
         maxItemsPerSession  = if ($config.maxItemsPerSession) { $config.maxItemsPerSession } else { 1 }
         language            = if ($config.language) { $config.language } else { "zh" }
-        verificationScript = if ($config.verificationScript) { $config.verificationScript } else { $null }
-        deliverables       = if ($config.deliverables) { @($config.deliverables) } else { @() }
-        feishu             = $config.feishu
+        verificationScript   = if ($config.verificationScript) { $config.verificationScript } else { $null }
+        goalVerificationScript = if ($config.goalVerificationScript) { $config.goalVerificationScript } else { $null }
+        deliverables         = if ($config.deliverables) { @($config.deliverables) } else { @() }
+        feishu               = $config.feishu
     }
     return $result
 }

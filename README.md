@@ -58,8 +58,13 @@ mkdir D:\Colin\Cursor\my-task
 | maxItemsPerSession | 否 | 每轮最多完成项数，默认 1 |
 | language | 否 | zh / en |
 | verificationScript | 否 | 每轮结束后执行的验证命令（如 `python -m pytest`） |
+| goalVerificationScript | 否 | 全部完成后执行的集成验证（如 `python -m pytest tests/integration`） |
 | deliverables | 否 | 交付物路径数组，用于健康检查（如 `["output/video/a.mp4"]`） |
 | feishu | 否 | 飞书通知配置，详见 [docs/FEISHU.md](docs/FEISHU.md) |
+
+### 验收驱动
+
+work_items 采用**验收驱动**：每项需含 `acceptanceCriteria`（必填）和 `verificationCommand`（推荐）。Coding Agent 必须执行验证且通过后才可标记 passes。全部完成后可执行 `goalVerificationScript` 做集成验证。详见 [docs/VERIFICATION.md](docs/VERIFICATION.md)。
 
 ## 团队接入
 

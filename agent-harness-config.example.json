@@ -5,6 +5,7 @@
   "maxItemsPerSession": 1,
   "language": "zh",
   "verificationScript": null,
+  "goalVerificationScript": null,
   "deliverables": ["index.html", "README.md"],
   "feishu": {
     "webhook": "",

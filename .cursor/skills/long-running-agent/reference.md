@@ -8,17 +8,28 @@
   "projectType": "web|cli|library|research|document|generic",
   "taskFormat": "features|milestones|checkpoints",
   "maxItemsPerSession": 1,
-  "language": "zh|en",
   "verificationScript": "python -m pytest",
+  "goalVerificationScript": "python -m pytest tests/integration",
   "deliverables": ["output/video/a.mp4", "README.md"]
 }
 ```
+
+## work_items 结构（验收驱动）
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| description | 是 | 实现描述 |
+| acceptanceCriteria | 是 | 验收条件数组，如 ["main.py 存在", "pytest 通过"] |
+| verificationCommand | 推荐 | 可执行验证命令，如 `python -m pytest tests/` |
+| passes | 是 | 初始 false，验收通过后改为 true |
+
+Coding Agent 必须执行 verificationCommand 且通过后，才可标记 passes。
 
 ## 状态文件
 
 | 文件 | 说明 |
 |------|------|
-| work_items.json | `{"items":[{"description":"...","passes":false}]}` |
+| work_items.json | 含 description、acceptanceCriteria、verificationCommand、passes |
 | claude-progress.txt | 进度日志，供下轮快速恢复 |
 | init.sh / init.ps1 | 可选，启动/验证脚本（Unix/Windows） |
 | logs/ | 会话日志（session_*.log, until_complete_*.log） |
