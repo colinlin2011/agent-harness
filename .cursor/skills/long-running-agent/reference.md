@@ -49,7 +49,7 @@ Coding Agent 必须执行 verificationCommand 且通过后，才可标记 passes
 # 循环直至完成（-AllowNetwork 需网络，-ContinueOnError 失败继续）
 .\agent-harness\scripts\run-until-complete.ps1 -ProjectPath <项目路径> -AllowNetwork
 
-# 健康检查
+# 健康检查（-RegressionCheck 回归校验，-Format json 输出 JSON）
 .\agent-harness\scripts\run-health-check.ps1 -ProjectPath <项目路径>
 ```
 
